@@ -1,0 +1,10 @@
+name: Simple Runnner
+
+on: push
+
+jobs:
+    run:
+        runs-on: self-hosted
+        steps:
+          -  name: Hello World
+             run: echo "Hello World!"
