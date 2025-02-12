@@ -1,6 +1,6 @@
 name: Simple Runnner
 
-on: push:
+on: push
     workflow_dispatch:
 
 jobs:
