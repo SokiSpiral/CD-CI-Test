@@ -13,5 +13,12 @@ jobs:
           -  name: Log
              run: echo "Build Start"
              
-          -  name: Run Build
-             run: /Users/kitamura/Documents/CD-CI-Test/build.sh
+          -  name: Run APK Build
+             run: /Users/kitamura/Documents/CD-CI-Test/buildAPK.sh
+             
+          -  name: Run AAB Build
+             run: /Users/kitamura/Documents/CD-CI-Test/buildAAB.sh
+             
+          -  name: Run iOS Build
+             run: /Users/kitamura/Documents/CD-CI-Test/buildIOS.sh
+             
