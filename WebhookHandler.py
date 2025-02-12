@@ -2,6 +2,7 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 
 class WebhookHandler (BaseHTTPRequestHandler):
     def do_POST(self):
+        print("sended webhook request");
         return
 
 if __name__ == "__main__":
