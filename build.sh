@@ -1,8 +1,8 @@
 echo "ビルド開始..."
 export UNITY_APP_PATH="/Applications/Unity/Hub/Editor/6000.0.37f1/Unity.app/Contents/MacOS/Unity"
-export UNITY_PROJECT_PATH="./URP"
+export UNITY_PROJECT_PATH="/Users/kitamura/Documents/CD-CI-Test/URP"
 export UNITY_BUILDFUNC_NAME="BuildScript.AndroidAPKBuild"
-export BUILD_OUTPUT_PATH="./URP/Build/build.apk"
+export BUILD_OUTPUT_PATH="/Users/kitamura/Documents/CD-CI-Test/URP/Build/build.apk"
 export BUILD_DATE=$(date +"%Y%m%d_%H%M%S")
 echo "Unityビルド実行中..."
 $UNITY_APP_PATH -batchmode \
