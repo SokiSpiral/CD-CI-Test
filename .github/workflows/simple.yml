@@ -14,4 +14,4 @@ jobs:
              run: echo "Build Start"
              
           -  name: Run Build
-             run: User/kitamura/documents/CD-CI-Test/build.sh
+             run: /Users/kitamura/Documents/CD-CI-Test/build.sh
