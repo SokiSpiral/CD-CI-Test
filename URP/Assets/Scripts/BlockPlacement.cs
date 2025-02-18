@@ -16,6 +16,8 @@ public class BlockPlacement : MonoBehaviour
         previewBlock.Setup(enableMaterial, disableMaterial);
 
         previewBlock.Hide();
+
+        GetComponent<GridRenderer>().Setup(previewBlock.ColliderTransform);
     }
 
     private void Update()

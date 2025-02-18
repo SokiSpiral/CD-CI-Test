@@ -2,6 +2,8 @@ using UnityEngine;
 
 public class PreviewBlock : MonoBehaviour
 {
+    public Transform ColliderTransform => _collider.transform;
+
     Collider _collider;
     Renderer _renderer;
 
