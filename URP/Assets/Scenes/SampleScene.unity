@@ -134,7 +134,7 @@ GameObject:
   - component: {fileID: 149424516}
   m_Layer: 0
   m_Name: Plane
-  m_TagString: Untagged
+  m_TagString: Ground
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -241,6 +241,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   blockPrefab: {fileID: 75864722052138780, guid: 5ed7b444d1a22314bbd1677214747cd1, type: 3}
+  previewMaterial: {fileID: 2100000, guid: 77f5de2001faa9646b839d9bc2c53a4c, type: 2}
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0
