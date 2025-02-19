@@ -27,7 +27,17 @@ public class CameraController : MonoBehaviour
             MouseMoveCheck();
             MouseZoomCheck();
         }
+        else
+        {
+            TouchRotateCheck();
+            TouchMoveCheck();
+            TouchZoomCheck();
+        }
     }
+
+    // --------------------------
+    //  PC向けの操作 (マウス)
+    // --------------------------
 
     void MouseMoveCheck()
     {
@@ -46,7 +56,7 @@ public class CameraController : MonoBehaviour
             if (_uiManager.IsPointerOverUI())
                 return;
 
-            var touchDiff =  new Vector2(mousePosition.x, mousePosition.y) - _lastMovePosition;
+            Vector2 touchDiff = (Vector2)mousePosition - _lastMovePosition;
             Vector3 move = new Vector3(-touchDiff.x * MOVE_SPEED * Time.deltaTime, 0, -touchDiff.y * MOVE_SPEED * Time.deltaTime);
             transform.Translate(move, Space.World);
             _lastMovePosition = mousePosition;
@@ -73,12 +83,16 @@ public class CameraController : MonoBehaviour
 
     void RotateCamera()
     {
-        Vector2 delta = new Vector2(Input.mousePosition.x, Input.mousePosition.y) - _lastTouchPosition;
-        float rotationX = -delta.y * ORBIT_SPEED; // 上下の動きでカメラのピッチを変える
-        float rotationY = delta.x * ORBIT_SPEED;  // 左右の動きでカメラのヨーを変える
+        Vector2 delta = (Vector2)Input.mousePosition - _lastTouchPosition;
+        float rotationX = -delta.y * ORBIT_SPEED;
+        float rotationY = delta.x * ORBIT_SPEED;
 
-        transform.Rotate(Vector3.up, rotationY, Space.World);
-        transform.Rotate(Vector3.right, rotationX, Space.Self);
+        // 回転制限を追加 (カメラの上下角度を制御)
+        Quaternion currentRotation = transform.rotation;
+        Quaternion yawRotation = Quaternion.Euler(0f, rotationY, 0f); // 左右回転
+        Quaternion pitchRotation = Quaternion.Euler(rotationX, 0f, 0f); // 上下回転
+
+        transform.rotation = yawRotation * currentRotation * pitchRotation;
 
         _lastTouchPosition = Input.mousePosition;
     }
@@ -99,5 +113,83 @@ public class CameraController : MonoBehaviour
     {
         float newFOV = Mathf.Clamp(_cam.fieldOfView + increment, minZoom, maxZoom);
         _cam.fieldOfView = newFOV;
+    }
+
+    // --------------------------
+    // スマホ向けの操作 (タッチ)
+    // --------------------------
+
+    void TouchMoveCheck()
+    {
+        if (Input.touchCount == 1)
+        {
+            Touch touch = Input.GetTouch(0);
+            if (touch.phase == TouchPhase.Began)
+            {
+                _lastMovePosition = touch.position;
+            }
+            else if (touch.phase == TouchPhase.Moved)
+            {
+                if (_uiManager.IsPointerOverUI())
+                    return;
+
+                Vector2 touchDiff = touch.position - _lastMovePosition;
+                Vector3 move = new Vector3(-touchDiff.x * MOVE_SPEED * Time.deltaTime, 0, -touchDiff.y * MOVE_SPEED * Time.deltaTime);
+                transform.Translate(move, Space.World);
+                _lastMovePosition = touch.position;
+            }
+        }
+    }
+
+    void TouchRotateCheck()
+    {
+        if (Input.touchCount == 1)
+        {
+            Touch touch = Input.GetTouch(0);
+            if (touch.phase == TouchPhase.Began)
+            {
+                _lastTouchPosition = touch.position;
+            }
+            else if (touch.phase == TouchPhase.Moved)
+            {
+                if (_uiManager.IsPointerOverUI())
+                    return;
+                RotateCameraTouch(touch);
+            }
+            else if (touch.phase == TouchPhase.Ended)
+            {
+                _lastTouchPosition = Vector2.zero;
+            }
+        }
+    }
+
+    void RotateCameraTouch(Touch touch)
+    {
+        Vector2 delta = touch.position - _lastTouchPosition;
+        float rotationX = -delta.y * ORBIT_SPEED;
+        float rotationY = delta.x * ORBIT_SPEED;
+
+        Quaternion currentRotation = transform.rotation;
+        Quaternion yawRotation = Quaternion.Euler(0f, rotationY, 0f);
+        Quaternion pitchRotation = Quaternion.Euler(rotationX, 0f, 0f);
+
+        transform.rotation = yawRotation * currentRotation * pitchRotation;
+
+        _lastTouchPosition = touch.position;
+    }
+
+    void TouchZoomCheck()
+    {
+        if (Input.touchCount == 2)
+        {
+            Touch touch0 = Input.GetTouch(0);
+            Touch touch1 = Input.GetTouch(1);
+
+            float prevDistance = (touch0.position - touch0.deltaPosition - (touch1.position - touch1.deltaPosition)).magnitude;
+            float currentDistance = (touch0.position - touch1.position).magnitude;
+            float deltaDistance = currentDistance - prevDistance;
+
+            ZoomCamera(-deltaDistance * zoomSpeed * Time.deltaTime);
+        }
     }
 }
