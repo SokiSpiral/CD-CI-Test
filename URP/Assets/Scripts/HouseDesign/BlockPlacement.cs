@@ -5,9 +5,11 @@ public class BlockPlacement : MonoBehaviour
 {
     [SerializeField] GameObject _blockPrefab;
     [SerializeField] GridRenderer _gridRenderer;
+    [SerializeField] UIManager _uiManager;
     [SerializeField] Material _enableMaterial;
     [SerializeField] Material _disableMaterial;
     PreviewBlock _previewBlock;
+    bool _isPreviewFixed = false;
 
     private void Start()
     {
@@ -18,10 +20,18 @@ public class BlockPlacement : MonoBehaviour
         _previewBlock.Hide();
 
         GetComponent<GridRenderer>().Setup(_previewBlock.ColliderTransform);
+        _uiManager.OnPlaceBlock += PlaceBlock;
     }
 
     private void Update()
     {
+        if (Application.isEditor && Input.GetMouseButtonDown(0))
+        {
+            _isPreviewFixed = !_isPreviewFixed; // クリックで固定・解除を切り替え
+        }
+        if (_isPreviewFixed)
+            return;
+
         var hits = RayHitCheck(Input.mousePosition);
         var groundHitData = GetRayHitData(hits, TagManager.GROUND_TAG);
         if (!groundHitData.IsHit)
@@ -31,9 +41,6 @@ public class BlockPlacement : MonoBehaviour
         }
 
         _previewBlock.Move(groundHitData.HitPoint);
-
-        if (Input.GetMouseButtonDown(0))
-            CreateBlock(groundHitData.HitPoint);
     }
 
     RaycastHit[] RayHitCheck(Vector3 position)
@@ -54,26 +61,15 @@ public class BlockPlacement : MonoBehaviour
         return new RayHitData();
     }
 
-    void CreateBlock(Vector3 point)
+    void PlaceBlock()
     {
         if (!_previewBlock.IsEnable())
             return;
 
         _previewBlock.Hide();
-        Vector3 snappedPosition = SnapToGrid(point);
-
-        var block = Instantiate(_blockPrefab, snappedPosition, Quaternion.identity).AddComponent<Block>();
+        var block = Instantiate(_blockPrefab, _previewBlock.transform.position, Quaternion.identity).AddComponent<Block>();
         block.Initialize();
         block.ColliderTransform.GetComponent<BoxCollider>().size *= 0.95f;
-    }
-
-    Vector3 SnapToGrid(Vector3 position)
-    {
-        float gridSize = _gridRenderer.GridSpacing;
-        float x = Mathf.Round(position.x / gridSize) * gridSize + (gridSize / 2);
-        float y = position.y;
-        float z = Mathf.Round(position.z / gridSize) * gridSize + (gridSize / 2);
-        return new Vector3(x, y, z);
     }
 }
 
