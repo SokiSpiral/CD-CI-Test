@@ -48,7 +48,7 @@ public class BlockPlacement : MonoBehaviour
 
     void PlaceBlock()
     {
-        if (!_previewBlock.IsEnable())
+        if (!_previewBlock.gameObject.activeSelf || !_previewBlock.IsEnable())
             return;
 
         _previewBlock.Hide();
