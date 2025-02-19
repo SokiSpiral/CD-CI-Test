@@ -27,13 +27,16 @@ public class BlockPlacement : MonoBehaviour
     {
         if (Application.isEditor && Input.GetMouseButtonDown(0))
         {
+            if (_uiManager.IsPointerOverUI())
+                return;
+
             _isPreviewFixed = !_isPreviewFixed; // クリックで固定・解除を切り替え
         }
         if (_isPreviewFixed)
             return;
 
-        var hits = RayHitCheck(Input.mousePosition);
-        var groundHitData = GetRayHitData(hits, TagManager.GROUND_TAG);
+        var hits = RayUtility.RayHitCheck(Input.mousePosition);
+        var groundHitData = RayUtility.GetRayHitData(hits, TagManager.GROUND_TAG);
         if (!groundHitData.IsHit)
         {
             _previewBlock.Hide();
@@ -41,24 +44,6 @@ public class BlockPlacement : MonoBehaviour
         }
 
         _previewBlock.Move(groundHitData.HitPoint);
-    }
-
-    RaycastHit[] RayHitCheck(Vector3 position)
-    {
-        Ray ray = Camera.main.ScreenPointToRay(position);
-        return Physics.RaycastAll(ray);
-    }
-
-    public RayHitData GetRayHitData(RaycastHit[] hitArray, string tag)
-    {
-        foreach (var hit in hitArray)
-        {
-            if (hit.collider.CompareTag(tag)) // 引数のタグと比較
-            {
-                return new RayHitData(hit.transform, hit.point);
-            }
-        }
-        return new RayHitData();
     }
 
     void PlaceBlock()
@@ -70,19 +55,5 @@ public class BlockPlacement : MonoBehaviour
         var block = Instantiate(_blockPrefab, _previewBlock.transform.position, Quaternion.identity).AddComponent<Block>();
         block.Initialize();
         block.ColliderTransform.GetComponent<BoxCollider>().size *= 0.95f;
-    }
-}
-
-public readonly struct RayHitData
-{
-    public readonly bool IsHit => HitTransform != null;
-    public readonly Vector3 HitPoint;
-    public readonly Transform HitTransform;
-
-    // コンストラクタ
-    public RayHitData(Transform hitTransform, Vector3 hitPoint)
-    {
-        HitTransform = hitTransform;
-        HitPoint = hitPoint;
     }
 }
