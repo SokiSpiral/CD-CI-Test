@@ -51,7 +51,7 @@ public class BlockPlacement : MonoBehaviour
         if (!_previewBlock.gameObject.activeSelf || !_previewBlock.IsEnable())
             return;
 
-        _previewBlock.Hide();
+        //_previewBlock.Hide();
         var block = Instantiate(_blockPrefab, _previewBlock.transform.position, Quaternion.identity).AddComponent<Block>();
         block.Initialize();
         block.ColliderTransform.GetComponent<BoxCollider>().size *= 0.95f;
