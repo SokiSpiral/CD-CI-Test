@@ -4,7 +4,8 @@ public class GridRenderer : MonoBehaviour
 {
     [SerializeField] private Color gridColor = Color.white;
     private BoxCollider blockCollider;
-    private float spacing;
+    
+    public float GridSpacing { get; private set; }
 
     public void Setup(Transform boxTransform)
     {
@@ -12,7 +13,7 @@ public class GridRenderer : MonoBehaviour
 
         Vector3 blockSize = blockCollider.size;
         Vector3 blockScale = boxTransform.transform.lossyScale;
-        spacing = Mathf.Max(blockSize.x * blockScale.x, blockSize.z * blockScale.z); // XかZの大きい方をグリッドサイズに
+        GridSpacing = Mathf.Max(blockSize.x * blockScale.x, blockSize.z * blockScale.z); // XかZの大きい方をグリッドサイズに
 
         DrawGrid();
     }
@@ -29,14 +30,14 @@ public class GridRenderer : MonoBehaviour
         GameObject gridParent = new GameObject("GridLines");
 
         // X軸方向のライン
-        for (float x = minX; x <= maxX; x += spacing)
+        for (float x = minX; x <= maxX; x += GridSpacing)
         {
             CreateLine(new Vector3(x, planeBounds.max.y + 0.01f, minZ),
                        new Vector3(x, planeBounds.max.y + 0.01f, maxZ), gridParent);
         }
 
         // Z軸方向のライン
-        for (float z = minZ; z <= maxZ; z += spacing)
+        for (float z = minZ; z <= maxZ; z += GridSpacing)
         {
             CreateLine(new Vector3(minX, planeBounds.max.y + 0.01f, z),
                        new Vector3(maxX, planeBounds.max.y + 0.01f, z), gridParent);

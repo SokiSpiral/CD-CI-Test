@@ -1,23 +1,23 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Collider))]
 public class BlockPlacement : MonoBehaviour
 {
-    [SerializeField] GameObject blockPrefab;
-    [SerializeField] Material enableMaterial;
-    [SerializeField] Material disableMaterial;
-    PreviewBlock previewBlock;
+    [SerializeField] GameObject _blockPrefab;
+    [SerializeField] GridRenderer _gridRenderer;
+    [SerializeField] Material _enableMaterial;
+    [SerializeField] Material _disableMaterial;
+    PreviewBlock _previewBlock;
 
     private void Start()
     {
-        var previewBlockObj = Instantiate(blockPrefab);
-        previewBlock = previewBlockObj.AddComponent<PreviewBlock>();
-        previewBlock.Setup(enableMaterial, disableMaterial);
+        var previewBlockObj = Instantiate(_blockPrefab);
+        _previewBlock = previewBlockObj.AddComponent<PreviewBlock>();
+        _previewBlock.Setup(_enableMaterial, _disableMaterial, _gridRenderer);
 
-        previewBlock.Hide();
+        _previewBlock.Hide();
 
-        GetComponent<GridRenderer>().Setup(previewBlock.ColliderTransform);
+        GetComponent<GridRenderer>().Setup(_previewBlock.ColliderTransform);
     }
 
     private void Update()
@@ -26,11 +26,11 @@ public class BlockPlacement : MonoBehaviour
         var groundHitData = GetRayHitData(hits, TagManager.GROUND_TAG);
         if (!groundHitData.IsHit)
         {
-            previewBlock.Hide();
+            _previewBlock.Hide();
             return;
         }
 
-        previewBlock.Move(groundHitData.HitPoint);
+        _previewBlock.Move(groundHitData.HitPoint);
 
         if (Input.GetMouseButtonDown(0))
             CreateBlock(groundHitData.HitPoint);
@@ -46,7 +46,7 @@ public class BlockPlacement : MonoBehaviour
     {
         foreach (var hit in hitArray)
         {
-            if (hit.collider.CompareTag(tag)) // à¯êîÇÃÉ^ÉOÇ∆î‰är
+            if (hit.collider.CompareTag(tag)) // ÂºïÊï∞„ÅÆ„Çø„Ç∞„Å®ÊØîËºÉ
             {
                 return new RayHitData(hit.transform, hit.point);
             }
@@ -56,11 +56,24 @@ public class BlockPlacement : MonoBehaviour
 
     void CreateBlock(Vector3 point)
     {
-        if (!previewBlock.IsEnable())
+        if (!_previewBlock.IsEnable())
             return;
 
-        previewBlock.Hide();
-        Instantiate(blockPrefab, point, Quaternion.identity);
+        _previewBlock.Hide();
+        Vector3 snappedPosition = SnapToGrid(point);
+
+        var block = Instantiate(_blockPrefab, snappedPosition, Quaternion.identity).AddComponent<Block>();
+        block.Initialize();
+        block.ColliderTransform.GetComponent<BoxCollider>().size *= 0.95f;
+    }
+
+    Vector3 SnapToGrid(Vector3 position)
+    {
+        float gridSize = _gridRenderer.GridSpacing;
+        float x = Mathf.Round(position.x / gridSize) * gridSize + (gridSize / 2);
+        float y = position.y;
+        float z = Mathf.Round(position.z / gridSize) * gridSize + (gridSize / 2);
+        return new Vector3(x, y, z);
     }
 }
 
@@ -70,7 +83,7 @@ public readonly struct RayHitData
     public readonly Vector3 HitPoint;
     public readonly Transform HitTransform;
 
-    // ÉRÉìÉXÉgÉâÉNÉ^
+    // „Ç≥„É≥„Çπ„Éà„É©„ÇØ„Çø
     public RayHitData(Transform hitTransform, Vector3 hitPoint)
     {
         HitTransform = hitTransform;
