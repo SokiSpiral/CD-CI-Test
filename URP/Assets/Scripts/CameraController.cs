@@ -137,7 +137,7 @@ public class CameraController : MonoBehaviour
             transform.Translate(move, Space.World);
             _lastMovePosition = touch.position;
         }
-        else if(touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
+        else if (touch.phase == TouchPhase.Ended || touch.phase == TouchPhase.Canceled)
         {
             _lastMovePosition = Vector2.zero;
         }
