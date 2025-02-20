@@ -25,13 +25,11 @@ public class BlockPlacement : MonoBehaviour
 
     private void Update()
     {
-        if (Application.isEditor && Input.GetMouseButtonDown(0))
-        {
-            if (_uiManager.IsPointerOverUI())
-                return;
+        if (_uiManager.IsPointerOverUI())
+            return;
 
-            _isPreviewFixed = !_isPreviewFixed; // クリックで固定・解除を切り替え
-        }
+        if (Application.isEditor && Input.GetMouseButtonDown(0))
+            _isPreviewFixed = !_isPreviewFixed;
         if (_isPreviewFixed)
             return;
 
@@ -51,7 +49,7 @@ public class BlockPlacement : MonoBehaviour
         if (!_previewBlock.gameObject.activeSelf || !_previewBlock.IsEnable())
             return;
 
-        //_previewBlock.Hide();
+        _previewBlock.Hide();
         var block = Instantiate(_blockPrefab, _previewBlock.transform.position, Quaternion.identity).AddComponent<Block>();
         block.Initialize();
         block.ColliderTransform.GetComponent<BoxCollider>().size *= 0.95f;

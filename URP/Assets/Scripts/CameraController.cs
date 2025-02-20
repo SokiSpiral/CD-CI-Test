@@ -1,164 +1,72 @@
 using UnityEngine;
-using UnityEngine.UI;
 
 public class CameraController : MonoBehaviour
 {
     [SerializeField] UIManager _uiManager;
-
-    private float minZoom = 40f, maxZoom = 120f;
-    private float zoomSpeed = 5.0f;
-    Camera _cam;
-    Vector2 _lastMovePosition;
     private Vector2 _lastTouchPosition;
+    private Vector2 _startTouchPosition;
+    private bool _isRotating = false;
 
-    const float MOVE_SPEED = 1.0f;
-    const float ORBIT_SPEED = 0.2f;
+    private Vector2 _lastTouchDistance;
 
-    void Start()
-    {
-        _cam = Camera.main;
-    }
+    private const float ROTATE_SPEED = 0.2f;
+    private const float ZOOM_SPEED = 0.1f;
+    private const float MOVE_THRESHOLD = 10f; // 回転のしきい値
 
     void Update()
     {
-        if (Application.isEditor)
-        {
-            MouseRotateCheck();
-            MouseMoveCheck();
-            MouseZoomCheck();
-        }
-        else
-        {
-            TouchRotateCheck();
-            TouchMoveCheck();
-            TouchZoomCheck();
-        }
+        TouchInputCheck();
     }
 
-    // --------------------------
-    //  PC向けの操作 (マウス)
-    // --------------------------
-
-    void MouseMoveCheck()
+    void TouchInputCheck()
     {
-        var mousePosition = Input.mousePosition;
-        if (Input.GetMouseButtonDown(1))
-        {
-            var hits = RayUtility.RayHitCheck(mousePosition);
-            var groundHitData = RayUtility.GetRayHitData(hits, TagManager.GROUND_TAG);
-            if (groundHitData.IsHit)
-                return;
-
-            _lastMovePosition = mousePosition;
-        }
-        else if (Input.GetMouseButton(1))
-        {
-            if (_uiManager.IsPointerOverUI())
-                return;
-
-            Vector2 touchDiff = (Vector2)mousePosition - _lastMovePosition;
-            Vector3 move = new Vector3(-touchDiff.x * MOVE_SPEED * Time.deltaTime, 0, -touchDiff.y * MOVE_SPEED * Time.deltaTime);
-            transform.Translate(move, Space.World);
-            _lastMovePosition = mousePosition;
-        }
-    }
-
-    void MouseRotateCheck()
-    {
-        if (Input.GetMouseButtonDown(0))
-        {
-            _lastTouchPosition = Input.mousePosition;
-        }
-        else if (Input.GetMouseButton(0))
-        {
-            if (_uiManager.IsPointerOverUI())
-                return;
-            RotateCamera();
-        }
-        else if (Input.GetMouseButtonUp(0))
-        {
-            _lastTouchPosition = Vector2.zero;
-        }
-    }
-
-    void RotateCamera()
-    {
-        Vector2 delta = (Vector2)Input.mousePosition - _lastTouchPosition;
-        float rotationX = -delta.y * ORBIT_SPEED;
-        float rotationY = delta.x * ORBIT_SPEED;
-
-        // 回転制限を追加 (カメラの上下角度を制御)
-        Quaternion currentRotation = transform.rotation;
-        Quaternion yawRotation = Quaternion.Euler(0f, rotationY, 0f); // 左右回転
-        Quaternion pitchRotation = Quaternion.Euler(rotationX, 0f, 0f); // 上下回転
-
-        transform.rotation = yawRotation * currentRotation * pitchRotation;
-
-        _lastTouchPosition = Input.mousePosition;
-    }
-
-    void MouseZoomCheck()
-    {
-        float scroll = Input.mouseScrollDelta.y;
-        if (scroll != 0f)
-        {
-            if (_uiManager.IsPointerOverUI())
-                return;
-
-            ZoomCamera(scroll * zoomSpeed * -1);
-        }
-    }
-
-    void ZoomCamera(float increment)
-    {
-        float newFOV = Mathf.Clamp(_cam.fieldOfView + increment, minZoom, maxZoom);
-        _cam.fieldOfView = newFOV;
-    }
-
-    // --------------------------
-    // スマホ向けの操作 (タッチ)
-    // --------------------------
-
-    void TouchMoveCheck()
-    {
-        if (Input.touchCount == 1)
+        if (Input.touchCount == 1) // 1本指: 回転
         {
             Touch touch = Input.GetTouch(0);
+
             if (touch.phase == TouchPhase.Began)
             {
-                _lastMovePosition = touch.position;
-            }
-            else if (touch.phase == TouchPhase.Moved)
-            {
-                if (_uiManager.IsPointerOverUI())
-                    return;
-
-                Vector2 touchDiff = touch.position - _lastMovePosition;
-                Vector3 move = new Vector3(-touchDiff.x * MOVE_SPEED * Time.deltaTime, 0, -touchDiff.y * MOVE_SPEED * Time.deltaTime);
-                transform.Translate(move, Space.World);
-                _lastMovePosition = touch.position;
-            }
-        }
-    }
-
-    void TouchRotateCheck()
-    {
-        if (Input.touchCount == 1)
-        {
-            Touch touch = Input.GetTouch(0);
-            if (touch.phase == TouchPhase.Began)
-            {
+                _startTouchPosition = touch.position;
                 _lastTouchPosition = touch.position;
+                _isRotating = false;
             }
             else if (touch.phase == TouchPhase.Moved)
             {
                 if (_uiManager.IsPointerOverUI())
                     return;
-                RotateCameraTouch(touch);
+
+                Vector2 touchDiff = touch.position - _startTouchPosition;
+
+                if (!_isRotating && Mathf.Abs(touchDiff.x) > MOVE_THRESHOLD)
+                {
+                    _isRotating = true;
+                }
+
+                if (_isRotating)
+                {
+                    RotateCameraTouch(touch);
+                }
             }
             else if (touch.phase == TouchPhase.Ended)
             {
-                _lastTouchPosition = Vector2.zero;
+                _isRotating = false;
+            }
+        }
+        else if (Input.touchCount == 2) // 2本指: ズーム
+        {
+            Touch touch1 = Input.GetTouch(0);
+            Touch touch2 = Input.GetTouch(1);
+
+            if (touch1.phase == TouchPhase.Began || touch2.phase == TouchPhase.Began)
+            {
+                _lastTouchDistance = touch2.position - touch1.position;
+            }
+            else if (touch1.phase == TouchPhase.Moved || touch2.phase == TouchPhase.Moved)
+            {
+                if (_uiManager.IsPointerOverUI())
+                    return;
+
+                ZoomCamera(touch1, touch2);
             }
         }
     }
@@ -166,30 +74,21 @@ public class CameraController : MonoBehaviour
     void RotateCameraTouch(Touch touch)
     {
         Vector2 delta = touch.position - _lastTouchPosition;
-        float rotationX = -delta.y * ORBIT_SPEED;
-        float rotationY = delta.x * ORBIT_SPEED;
+        float rotationX = -delta.y * ROTATE_SPEED * Time.deltaTime;
+        float rotationY = delta.x * ROTATE_SPEED * Time.deltaTime;
 
-        Quaternion currentRotation = transform.rotation;
-        Quaternion yawRotation = Quaternion.Euler(0f, rotationY, 0f);
-        Quaternion pitchRotation = Quaternion.Euler(rotationX, 0f, 0f);
-
-        transform.rotation = yawRotation * currentRotation * pitchRotation;
+        transform.Rotate(Vector3.up, rotationY, Space.World);
+        transform.Rotate(transform.right, rotationX, Space.Self);
 
         _lastTouchPosition = touch.position;
     }
 
-    void TouchZoomCheck()
+    void ZoomCamera(Touch touch1, Touch touch2)
     {
-        if (Input.touchCount == 2)
-        {
-            Touch touch0 = Input.GetTouch(0);
-            Touch touch1 = Input.GetTouch(1);
+        Vector2 currentTouchDistance = touch2.position - touch1.position;
+        float deltaMagnitude = _lastTouchDistance.magnitude - currentTouchDistance.magnitude;
 
-            float prevDistance = (touch0.position - touch0.deltaPosition - (touch1.position - touch1.deltaPosition)).magnitude;
-            float currentDistance = (touch0.position - touch1.position).magnitude;
-            float deltaDistance = currentDistance - prevDistance;
-
-            ZoomCamera(-deltaDistance * zoomSpeed * Time.deltaTime);
-        }
+        transform.position += transform.forward * deltaMagnitude * ZOOM_SPEED * Time.deltaTime;
+        _lastTouchDistance = currentTouchDistance;
     }
 }
