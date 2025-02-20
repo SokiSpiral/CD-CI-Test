@@ -9,8 +9,8 @@ public class CameraController : MonoBehaviour
 
     private Vector2 _lastTouchDistance;
 
-    private const float ROTATE_SPEED = 0.2f;
-    private const float ZOOM_SPEED = 0.1f;
+    private const float ROTATE_SPEED = 2f;
+    private const float ZOOM_SPEED = 1f;
     private const float MOVE_THRESHOLD = 10f; // 回転のしきい値
 
     void Update()
@@ -77,10 +77,23 @@ public class CameraController : MonoBehaviour
         float rotationX = -delta.y * ROTATE_SPEED * Time.deltaTime;
         float rotationY = delta.x * ROTATE_SPEED * Time.deltaTime;
 
-        transform.Rotate(Vector3.up, rotationY, Space.World);
-        transform.Rotate(transform.right, rotationX, Space.Self);
+        var currentEularAngles = transform.eulerAngles;
+
+        float yaw = currentEularAngles.y + rotationY;
+        float pitch = currentEularAngles.x + rotationX;
+        pitch = ClampAngle(pitch, -80, 80);
+
+        transform.rotation = Quaternion.Euler(pitch, yaw, 0);
 
         _lastTouchPosition = touch.position;
+    }
+
+    float ClampAngle(float angle, float min, float max)
+    {
+        if (angle > 180.0f)
+            angle -= 360.0f;
+
+        return Mathf.Clamp(angle, min, max);
     }
 
     void ZoomCamera(Touch touch1, Touch touch2)
