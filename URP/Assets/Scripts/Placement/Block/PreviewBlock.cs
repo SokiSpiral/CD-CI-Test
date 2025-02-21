@@ -73,6 +73,12 @@ public class PreviewBlock : Block
         gameObject.SetActive(true);
     }
 
+    public void Show(Vector3 position)
+    {
+        Move(position);
+        gameObject.SetActive(true);
+    }
+
     Vector3 SnapToGrid(Vector3 position)
     {
         float gridSize = _gridRenderer.GridSpacing;

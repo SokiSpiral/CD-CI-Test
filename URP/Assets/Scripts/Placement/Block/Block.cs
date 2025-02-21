@@ -13,13 +13,18 @@ public class Block : MonoBehaviour
         }
     }
 
-    protected Collider _collider;
+    protected BoxCollider _collider;
     protected Renderer _renderer;
 
     public void Initialize()
     {
         _renderer = GetComponentInChildren<Renderer>();
-        _collider = GetComponentInChildren<Collider>();
+        _collider = GetComponentInChildren<BoxCollider>();
         _collider.tag = TagManager.BLOCK_TAG;
+
+        if(_collider == null)
+        {
+            Debug.Log("Invalid Block Found! : Not Assigned BoxCollider");
+        }
     }
 }

@@ -9,6 +9,7 @@ public class UIManager : MonoBehaviour
 {
     [SerializeField] private GraphicRaycaster _graphicRaycaster;
     [SerializeField] private Button _placeBlockButton;
+    [SerializeField] private SelectBlockUI _selectBlockUI;
     public event UnityAction OnPlaceBlock;
 
     private void Start()
