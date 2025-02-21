@@ -1,29 +1,12 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class GridRenderer : MonoBehaviour
 {
     [SerializeField] private Color gridColor = Color.white;
-    private BoxCollider blockCollider;
-    
-    public float GridSpacing { get; private set; }
+    public static float GRID_SIZE = 1.0f;
 
-    public void Setup(Transform boxTransform)
-    {
-        blockCollider = boxTransform.GetComponent<BoxCollider>();
-
-        Vector3 blockSize = blockCollider.size;
-        Vector3 blockScale = boxTransform.transform.lossyScale;
-        GridSpacing = Mathf.Max(blockSize.x * blockScale.x, blockSize.z * blockScale.z); // XかZの大きい方をグリッドサイズに
-
-        if(GridSpacing <= 0)
-        {
-            Debug.LogError("Invalid GridSpace.");
-            return;
-        }
-        DrawGrid();
-    }
-
-    private void DrawGrid()
+    public void DrawGrid()
     {
         Bounds planeBounds = gameObject.GetComponent<Renderer>().bounds;
 
@@ -35,14 +18,14 @@ public class GridRenderer : MonoBehaviour
         GameObject gridParent = new GameObject("GridLines");
 
         // X軸方向のライン
-        for (float x = minX; x <= maxX; x += GridSpacing)
+        for (float x = minX; x <= maxX; x += GRID_SIZE)
         {
             CreateLine(new Vector3(x, planeBounds.max.y + 0.01f, minZ),
                        new Vector3(x, planeBounds.max.y + 0.01f, maxZ), gridParent);
         }
 
         // Z軸方向のライン
-        for (float z = minZ; z <= maxZ; z += GridSpacing)
+        for (float z = minZ; z <= maxZ; z += GRID_SIZE)
         {
             CreateLine(new Vector3(minX, planeBounds.max.y + 0.01f, z),
                        new Vector3(maxX, planeBounds.max.y + 0.01f, z), gridParent);

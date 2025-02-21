@@ -6,14 +6,12 @@ public class PreviewBlock : Block
     Material _disableMaterial;
 
     bool _isEnable;
-    GridRenderer _gridRenderer;
 
-    public void Setup(Material enableMaterial, Material disableMaterial, GridRenderer gridRenderer)
+    public void Setup(Material enableMaterial, Material disableMaterial)
     {
         Initialize();
         _enableMaterial = enableMaterial;
         _disableMaterial = disableMaterial;
-        _gridRenderer = gridRenderer;
 
         _collider.tag = TagManager.PREVIEW_TAG;
     }
@@ -81,10 +79,10 @@ public class PreviewBlock : Block
 
     Vector3 SnapToGrid(Vector3 position)
     {
-        float gridSize = _gridRenderer.GridSpacing;
-        float x = Mathf.Round(position.x / gridSize) * gridSize + (gridSize / 2);
+        float gridSize = GridRenderer.GRID_SIZE;
+        float x = Mathf.Round(position.x / gridSize) * gridSize;
         float y = position.y;
-        float z = Mathf.Round(position.z / gridSize) * gridSize + (gridSize / 2);
+        float z = Mathf.Round(position.z / gridSize) * gridSize;
         return new Vector3(x, y, z);
     }
 }
