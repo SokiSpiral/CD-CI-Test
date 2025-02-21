@@ -2,7 +2,16 @@ using UnityEngine;
 
 public class Block : MonoBehaviour
 {
-    public Transform ColliderTransform => _collider.transform;
+    public Transform ColliderTransform
+    {
+        get
+        {
+            if (_collider == null)
+                return null;
+
+            return _collider.transform;
+        }
+    }
 
     protected Collider _collider;
     protected Renderer _renderer;

@@ -15,6 +15,11 @@ public class GridRenderer : MonoBehaviour
         Vector3 blockScale = boxTransform.transform.lossyScale;
         GridSpacing = Mathf.Max(blockSize.x * blockScale.x, blockSize.z * blockScale.z); // XかZの大きい方をグリッドサイズに
 
+        if(GridSpacing <= 0)
+        {
+            Debug.LogError("Invalid GridSpace.");
+            return;
+        }
         DrawGrid();
     }
 
