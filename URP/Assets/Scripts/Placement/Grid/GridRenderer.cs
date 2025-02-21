@@ -1,4 +1,3 @@
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class GridRenderer : MonoBehaviour
@@ -6,8 +5,13 @@ public class GridRenderer : MonoBehaviour
     [SerializeField] private Color gridColor = Color.white;
     public static float GRID_SIZE = 1.0f;
 
+    GameObject _gridParent;
+
     public void DrawGrid()
     {
+        if (_gridParent != null)
+            Destroy(_gridParent);
+
         Bounds planeBounds = gameObject.GetComponent<Renderer>().bounds;
 
         float minX = planeBounds.min.x;
@@ -15,20 +19,20 @@ public class GridRenderer : MonoBehaviour
         float minZ = planeBounds.min.z;
         float maxZ = planeBounds.max.z;
 
-        GameObject gridParent = new GameObject("GridLines");
+        _gridParent = new GameObject("GridLines");
 
         // X軸方向のライン
         for (float x = minX; x <= maxX; x += GRID_SIZE)
         {
             CreateLine(new Vector3(x, planeBounds.max.y + 0.01f, minZ),
-                       new Vector3(x, planeBounds.max.y + 0.01f, maxZ), gridParent);
+                       new Vector3(x, planeBounds.max.y + 0.01f, maxZ), _gridParent);
         }
 
         // Z軸方向のライン
         for (float z = minZ; z <= maxZ; z += GRID_SIZE)
         {
             CreateLine(new Vector3(minX, planeBounds.max.y + 0.01f, z),
-                       new Vector3(maxX, planeBounds.max.y + 0.01f, z), gridParent);
+                       new Vector3(maxX, planeBounds.max.y + 0.01f, z), _gridParent);
         }
     }
 

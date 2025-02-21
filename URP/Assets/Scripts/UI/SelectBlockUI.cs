@@ -10,7 +10,7 @@ public class SelectBlockUI : MonoBehaviour
     [SerializeField] private Button _rightButton;
     [SerializeField] private Text _blockNameText;
 
-    [SerializeField] private BlockManager _blockManager;
+    [SerializeField] private BlockPrefabManager _blockManager;
 
     private void Start()
     {

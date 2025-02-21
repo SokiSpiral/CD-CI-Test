@@ -16,7 +16,7 @@ public class CameraController : MonoBehaviour
 
     void Update()
     {
-        if (Application.isEditor)
+        if (CommonUtility.IsPC)
             MouseInputCheck();
         else
             TouchInputCheck();

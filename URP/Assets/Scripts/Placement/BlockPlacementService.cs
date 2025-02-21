@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class BlockPlacementService
 {
@@ -9,45 +10,72 @@ public class BlockPlacementService
     private Material _enableMaterial;
     private Material _disableMaterial;
     private BlockManager _blockManager;
+    private BlockPrefabManager _blockPrefabManager;
+    private GroundPlane _groundPlane;
 
-    public BlockPlacementService(BlockManager blockManager, Material enableMaterial, Material disableMaterial)
+    public BlockPlacementService(BlockManager blockManager, BlockPrefabManager blockPrefabManager, GroundPlane groundPlane, Material enableMaterial, Material disableMaterial)
     {
         _blockManager = blockManager;
+        _blockPrefabManager = blockPrefabManager;
         _enableMaterial = enableMaterial;
         _disableMaterial = disableMaterial;
+        _groundPlane = groundPlane;
     }
 
     public void Initialize(UIManager uiManager)
     {
-        if (_blockManager == null)
+        if (_blockPrefabManager == null)
         {
             Debug.LogError("BlockManager is not assigned!");
             return;
         }
 
-        CreatePreviewBlock(0, _blockManager.GetCurrentBlock());
+        CreatePreviewBlock(0, _blockPrefabManager.GetCurrentBlock());
         _currentBlockIndex = 0;
         _prevBlockIndex = -1;
 
         uiManager.OnPlaceBlock += PlaceBlock;
-        _blockManager.OnChangeSelectingBlock += ChangePreviewBlock;
+        uiManager.OnSaveGridData += () => GridSaveDataManager.SaveGridData(_groundPlane, uiManager.EnableLoadButton);
+        uiManager.OnLoadGridData += () => GridSaveDataManager.LoadGridData(_groundPlane, _blockManager.DestroyAllBlock, PlaceBlock);
+
+        _blockPrefabManager.OnChangeSelectingBlock += ChangePreviewBlock;
     }
 
-    public void PlaceBlock()
+    private void PlaceBlock()
     {
         if (!_previewBlocks[_currentBlockIndex].gameObject.activeSelf || !_previewBlocks[_currentBlockIndex].IsEnable())
             return;
 
         _previewBlocks[_currentBlockIndex].Hide();
-        var selectedBlockPrefab = _blockManager.GetCurrentBlock();
+        var selectedBlockPrefab = _blockPrefabManager.GetCurrentBlock();
         if (selectedBlockPrefab == null) return;
 
-        var block = Object.Instantiate(selectedBlockPrefab, _previewBlocks[_currentBlockIndex].transform.position, Quaternion.identity).AddComponent<Block>();
-        block.Initialize();
-        block.ColliderTransform.GetComponent<BoxCollider>().size *= 0.95f;
+        var block = CreateBlock(selectedBlockPrefab, _previewBlocks[_currentBlockIndex].transform.position);
+        _groundPlane.AddBlock(block.transform.position, _currentBlockIndex);
     }
 
-    public void ChangePreviewBlock(int index)
+    public void PlaceBlock(Vector3 position, int blockId)
+    {
+        GameObject blockPrefab = _blockPrefabManager.GetBlockPrefab(blockId);
+        if (blockPrefab == null)
+        {
+            Debug.LogWarning("Block prefab not found for ID: " + blockId);
+            return;
+        }
+
+        CreateBlock(blockPrefab, position);
+    }
+
+    Block CreateBlock(GameObject blockPrefab, Vector3 position)
+    {
+        var block = Object.Instantiate(blockPrefab, position, Quaternion.identity).AddComponent<Block>();
+        _blockManager.AddBlock(block.gameObject);
+        block.Initialize();
+        block.ColliderTransform.GetComponent<BoxCollider>().size *= 0.95f;
+        return block;
+    }
+
+    private void ChangePreviewBlock(int index)
     {
         _prevBlockIndex = _currentBlockIndex;
         _currentBlockIndex = index;
@@ -56,10 +84,12 @@ public class BlockPlacementService
         _previewBlocks[_prevBlockIndex].Hide();
 
         if (!_previewBlocks.ContainsKey(index))
-            CreatePreviewBlock(index, _blockManager.GetCurrentBlock());
+            CreatePreviewBlock(index, _blockPrefabManager.GetCurrentBlock());
 
         if (hasPrevBlockActive)
+        {
             _previewBlocks[index].Show(_previewBlocks[_prevBlockIndex].transform.position);
+        }
     }
 
     private void CreatePreviewBlock(int index, GameObject blockPrefab)
@@ -79,6 +109,9 @@ public class BlockPlacementService
 
     public void HidePreviewBlock()
     {
+        if (_previewBlocks.Count == 0)
+            return;
+
         _previewBlocks[_currentBlockIndex].Hide();
     }
 }
