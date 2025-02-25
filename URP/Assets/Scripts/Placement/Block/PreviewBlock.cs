@@ -32,7 +32,7 @@ public class PreviewBlock : Block
 
     bool IsCollidingWithBlock()
     {
-        Collider[] hitColliders = Physics.OverlapBox(transform.position, transform.localScale / 2);
+        Collider[] hitColliders = Physics.OverlapBox(transform.position, ColliderTransform.localScale / 2);
         foreach (var collider in hitColliders)
         {
             if (collider.CompareTag(TagManager.BLOCK_TAG))

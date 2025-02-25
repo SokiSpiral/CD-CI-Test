@@ -1323,7 +1323,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _groundPlane: {fileID: 149424518}
-  _blockManager: {fileID: 1691844475}
+  _blockManager: {fileID: 1691844477}
+  _blockPrefabManager: {fileID: 1691844475}
   _uiManager: {fileID: 271623701}
   _enableMaterial: {fileID: 2100000, guid: 77f5de2001faa9646b839d9bc2c53a4c, type: 2}
   _disableMaterial: {fileID: 2100000, guid: 3bced977fbcddf74f80112057da18a6b, type: 2}
@@ -1589,6 +1590,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1691844476}
   - component: {fileID: 1691844475}
+  - component: {fileID: 1691844477}
   m_Layer: 0
   m_Name: BlockManager
   m_TagString: Untagged
@@ -1626,6 +1628,18 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1691844477
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1691844474}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10d742b3d3979854399fff29f104a159, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &1878627234
 GameObject:
   m_ObjectHideFlags: 0
